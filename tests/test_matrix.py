@@ -70,3 +70,21 @@ def test_add():
         [2,4,],
         [2,0,],
     ])
+
+def test_transpose():
+    assert Matrix([
+        [2,1,0],
+        [3,1,1],
+    ]) == Matrix([
+        [2,3,],
+        [1,1,],
+        [0,1,],
+    ]).transpose()
+
+    assert Matrix([
+        [1,2,3,],
+    ]) == Matrix([
+        [1,],
+        [2,],
+        [3,],
+    ]).transpose()

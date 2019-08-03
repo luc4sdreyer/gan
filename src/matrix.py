@@ -63,6 +63,13 @@ class Matrix(object):
                 self[i][j] += other[i][j]
         return self
 
+    def transpose(self):
+        result = Matrix.create(list(reversed(self.dimensions)), lambda: 0.0)
+        for i in range(self.dimensions[0]):
+            for j in range(self.dimensions[1]):
+                result[j][i] = self[i][j]
+        return result
+
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
 
