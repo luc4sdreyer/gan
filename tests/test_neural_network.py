@@ -26,10 +26,10 @@ def test_load_1():
     n.weights[0][3][1] = 10
 
     print('')
-    X = [1,1,0.5,]
-    assert [39.5] == n.load(X)
+    X = [[1,1,0.5,]]
+    assert [39.5] == n.load(X[0])
 
-    n.train(X, 3.5)
+    n.train(X, [3.5])
     n.print_debug()
 
 def test_load_gaussian(reset_random_seed):
@@ -37,7 +37,7 @@ def test_load_gaussian(reset_random_seed):
         [3,2,3,1],
         )
     print(n.weights[0][0][1])
-    X = [1,1,1,]
-    assert [0.3286929178446704] == n.load(X)
-    n.train(X, 3.5)
+    X = [[1,1,1,]]
+    assert [0.3286929178446704] == n.load(X[0])
+    n.train(X, [3.5])
     n.print_debug()

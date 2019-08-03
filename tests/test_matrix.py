@@ -30,3 +30,43 @@ def test_multiply2():
     ])
     c = a.multiply(b)
     assert c == Matrix([[14]])
+
+def test_multiply_scalar():
+    a = Matrix([
+        [2,3,],
+        [1,1,],
+        [0,1,],
+        [1,1,],
+    ])
+    c = a.multiply_scalar(-1)
+    assert c == Matrix([
+        [-2,-3,],
+        [-1,-1,],
+        [-0,-1,],
+        [-1,-1,],
+    ])
+
+    b = Matrix([
+        [3,2,1,],
+        [1,1,1,],
+    ])
+    c = b.multiply_scalar(3.0)
+    assert c == Matrix([
+        [9.0,6.0,3.0,],
+        [3.0,3.0,3.0,],
+    ])
+
+def test_add():
+    a = Matrix([
+        [2,3,],
+        [1,1,],
+    ])
+    b = Matrix([
+        [0,1,],
+        [1,-1,],
+    ])
+    c = a.add(b)
+    assert c == Matrix([
+        [2,4,],
+        [2,0,],
+    ])

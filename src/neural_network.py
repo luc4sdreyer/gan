@@ -7,6 +7,8 @@ The weight matrix convention used here is:
 Weight from node i to node j at layer k: self.weights[k][i][j]
 
 with the first node being the bias, except for the output layer that doesn't have a bias.
+
+This network uses mean squared error for the error (loss) function.
 """
 
 import random
@@ -20,8 +22,10 @@ class NeuralNetwork(object):
     def __init__(self, layer_widths,
         inner_activation_function=activation_functions.logistic,
         outer_activation_function=activation_functions.logistic,
-        initializer=lambda: random.gauss(0, 1)):
+        initializer=lambda: random.gauss(0, 1),
+        num_iterations=1000):
 
+        self.num_iterations = num_iterations
         self.depth = len(layer_widths)
         self.inner_activation_function = inner_activation_function
         self.outer_activation_function = outer_activation_function
@@ -115,6 +119,13 @@ class NeuralNetwork(object):
             delta[current_depth] = delta_layer
         return delta
 
+    def train_step(self, X, y):
+        for i in range(len(X)):
+            actual_y = self.load(X[i])
+            self.deltas = self._get_delta(X, y)
+            # partial derivative of the error (with respect to each weight)
+            # pdew = 
+
     def train(self, X, y):
-        actual_y = self.load(X)
-        self.deltas = self._get_delta(X, y)
+        for epoch in range(self.num_iterations):
+            self.train_step(X, y)

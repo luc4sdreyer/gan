@@ -46,6 +46,23 @@ class Matrix(object):
 
         return result
 
+    def multiply_scalar(self, scalar):
+        for i in range(self.dimensions[0]):
+            for j in range(self.dimensions[1]):
+                self[i][j] *= scalar
+        return self
+
+    def add(self, other):
+        if self.dimensions != other.dimensions:
+            raise ValueError((
+                "Internal dimensions don't match: "
+                "%s vs %s", (self.dimensions, other.dimensions)
+            ))
+        for i in range(self.dimensions[0]):
+            for j in range(self.dimensions[1]):
+                self[i][j] += other[i][j]
+        return self
+
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
 
