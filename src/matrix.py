@@ -1,5 +1,6 @@
 import json
 
+
 class Matrix(object):
     def __init__(self, native_nested_list):
         self.dimensions = [len(native_nested_list), len(native_nested_list[0])]
@@ -7,12 +8,12 @@ class Matrix(object):
         self._arr = native_nested_list
 
     @staticmethod
-    def create(dimensions, initial_value=0):
+    def create(dimensions, initializer=lambda: 0.0):
         result = []
         for i in range(dimensions[0]):
             result.append([])
             for j in range(dimensions[1]):
-                result[i].append(initial_value)
+                result[i].append(initializer())
         return Matrix(result)
 
     def _get_dimensionality(self, native_nested_list, dimensionality):
@@ -48,6 +49,17 @@ class Matrix(object):
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
 
-
     def __repr__(self):
         return json.dumps(self._arr)
+
+    def __getitem__(self, key):
+        return self._arr[key]
+
+    def print_debug(self):
+        for row in self._arr:
+            output = "|"
+            for num in row:
+                output += ("%.2f" % num).center(7, ' ')
+            output += "|"
+            print(output)
+        print('')
