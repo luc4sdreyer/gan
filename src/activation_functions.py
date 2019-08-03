@@ -1,36 +1,36 @@
 from math import *
 
 
-def tanH(x):
-    return tanh(x)
+class tanH():
+    def f(x):
+        return tanh(x)
+
+    def df(x):
+        return 1.0 - (tanH.f(x) * tanH.f(x))
 
 
-def tanH_derivative(x):
-    return 1.0 - (tanH(x) * tanH(x))
-
-
-def logistic(x):
+class logistic():
     """
     (a.k.a. Sigmoid or Soft step
     """
-    return 1.0 / (1.0 + exp(-x))
+    def f(x):
+        return 1.0 / (1.0 + exp(-x))
+
+    def df(x):
+        return logistic.f(x) * (1.0 - logistic.f(x))
 
 
-def logistic_derivative(x):
-    return logistic(x) * (1.0 - logistic(x))
+class reLU():
+    def f(x):
+        return 0 if x <= 0 else x
+
+    def df(x):
+        return 0 if x <= 0 else 1
 
 
-def reLU(x):
-    return 0 if x <= 0 else x
+class softPlus():
+    def f(x):
+        return log(1.0 + exp(x))
 
-
-def reLU_derivative(x):
-    return 0 if x <= 0 else 1
-
-
-def softPlus(x):
-    return log(1.0 + exp(x))
-
-
-def softPlus_derivative(x):
-    return 1.0 / (1.0 + exp(-x))
+    def df(x):
+        return 1.0 / (1.0 + exp(-x))
