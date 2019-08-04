@@ -155,6 +155,8 @@ class NeuralNetwork(object):
     def train_step(self, X, y, epoch):
         self.total_pdews = None
         mean_squared_error = 0
+
+        # get partial errors
         for i in range(len(X)):
             actual_y = self.load(X[i])[0]
             y_diff = actual_y - y[i]
@@ -167,11 +169,13 @@ class NeuralNetwork(object):
                 for j in range(self.depth -1):
                     self.total_pdews[j].add(self.pdews[j])
 
+        # apply learning rate
         for j in range(0, self.depth -1):
             self.total_pdews[j].multiply_scalar(1.0 / len(X) * -self.learning_rate)
 
         self.weight_adjustments = self.total_pdews
 
+        # adjust weights
         for j in range(0, self.depth -1):
             self.weights[j].add(self.weight_adjustments[j])
 

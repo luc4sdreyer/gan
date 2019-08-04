@@ -88,3 +88,10 @@ def test_transpose():
         [2,],
         [3,],
     ]).transpose()
+
+def test_squared_l2_norm():
+
+    assert Matrix([
+        [2,1,0],
+        [3,1,1],
+    ]).squared_l2_norm() == 16

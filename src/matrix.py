@@ -70,6 +70,13 @@ class Matrix(object):
                 result[j][i] = self[i][j]
         return result
 
+    def squared_l2_norm(self):
+        total = 0
+        for i in range(self.dimensions[0]):
+            for j in range(self.dimensions[1]):
+                total += self[i][j] * self[i][j]
+        return total
+
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
 

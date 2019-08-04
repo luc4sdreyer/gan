@@ -65,22 +65,20 @@ def test_train_gaussian(reset_random_seed):
 
 def test_train_iris(reset_random_seed):
     iris = datasets.load_iris()
-    X = iris.data.tolist()
-    y = iris.target.tolist()
-    n = NeuralNetwork(
-        [len(X[0]),5,5,1],
-        num_iterations=100000,
-    )
-    n.train(X, y)
-    n.print_debug()
+    orig_X = iris.data.tolist()
+    orig_y = iris.target.tolist()
 
-def test_train_iris(reset_random_seed):
-    iris = datasets.load_iris()
-    X = iris.data.tolist()
-    y = iris.target.tolist()
+    # discard the 3rd class
+    X = []
+    y = []
+    for i in range(len(orig_y)):
+        if orig_y[i] <= 1:
+            X.append(orig_X[i])
+            y.append(orig_y[i])
+
     n = NeuralNetwork(
         [len(X[0]),5,5,1],
-        num_iterations=2,
+        num_iterations=1,
     )
     n.train(X, y)
     n.print_debug()
