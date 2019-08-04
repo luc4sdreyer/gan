@@ -158,8 +158,8 @@ class NeuralNetwork(object):
 
         # get partial errors
         for i in range(len(X)):
-            actual_y = self.load(X[i])[0]
-            y_diff = actual_y - y[i]
+            actual_y = self.load(X[i])
+            y_diff = actual_y[0] - y[i]
             mean_squared_error += y_diff * y_diff
             self.deltas = self._get_delta(y_diff)
             self.pdews = self._get_pdew(self.deltas)
@@ -203,10 +203,19 @@ class NeuralNetwork(object):
 
         return True
 
-
     def train(self, X, y):
         for epoch in range(self.num_iterations):
             if not self.train_step(X, y, epoch):
                 break
 
-        self.print_debug()
+    def test(self, X, y):
+        mean_squared_error = 0
+
+        for i in range(len(X)):
+            actual_y = self.load(X[i])
+            y_diff = actual_y[0] - y[i]
+            mean_squared_error += y_diff * y_diff
+
+        mean_squared_error /= len(X)
+
+        print("test MSE: %.5f" % (mean_squared_error))

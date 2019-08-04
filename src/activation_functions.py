@@ -22,10 +22,10 @@ class logistic():
 
 class reLU():
     def f(x):
-        return 0 if x <= 0 else x
+        return 0.0 if x <= 0 else x
 
     def df(x):
-        return 0 if x <= 0 else 1
+        return 0.0 if x <= 0 else 1.0
 
 
 class softPlus():

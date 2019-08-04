@@ -2,6 +2,7 @@ from src.neural_network import NeuralNetwork
 from src import activation_functions
 
 from sklearn import datasets
+from sklearn.model_selection import train_test_split
 
 
 class passthrough():
@@ -76,9 +77,16 @@ def test_train_iris(reset_random_seed):
             X.append(orig_X[i])
             y.append(orig_y[i])
 
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.33)
+
     n = NeuralNetwork(
-        [len(X[0]),5,5,1],
+        [len(X_train[0]),5,5,1],
         num_iterations=1,
+        inner_activation_function = activation_functions.reLU,
+        outer_activation_function = activation_functions.logistic,
+        stop_criterion=lambda err: err < 10**-4,
     )
-    n.train(X, y)
+    n.train(X_train, y_train)
+    n.test(X_test, y_test)
     n.print_debug()
