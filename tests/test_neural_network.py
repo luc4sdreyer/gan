@@ -1,6 +1,8 @@
 from src.neural_network import NeuralNetwork
 from src import activation_functions
 
+from sklearn import datasets
+
 
 class passthrough():
     def f(x):
@@ -57,5 +59,28 @@ def test_train_gaussian(reset_random_seed):
         [2,2,2,],
     ]
     y = [0.5, 0.2]
+    n.train(X, y)
+    n.print_debug()
+    assert n.min_error == 0.023915334328727347
+
+def test_train_iris(reset_random_seed):
+    iris = datasets.load_iris()
+    X = iris.data.tolist()
+    y = iris.target.tolist()
+    n = NeuralNetwork(
+        [len(X[0]),5,5,1],
+        num_iterations=100000,
+    )
+    n.train(X, y)
+    n.print_debug()
+
+def test_train_iris(reset_random_seed):
+    iris = datasets.load_iris()
+    X = iris.data.tolist()
+    y = iris.target.tolist()
+    n = NeuralNetwork(
+        [len(X[0]),5,5,1],
+        num_iterations=2,
+    )
     n.train(X, y)
     n.print_debug()

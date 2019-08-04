@@ -28,11 +28,11 @@ class NeuralNetwork(object):
         num_iterations=1000,
         learning_rate=0.1,
         stop_criterion=lambda err: err < 10**-5,
-        restart_limit=10000):
+        restart_limit=0):
 
         self.restart_limit = restart_limit
         self.learning_rate = learning_rate
-        self.num_iterations = num_iterations
+        self.num_iterations = num_iterations if num_iterations > 0 else sys.maxint
         self.depth = len(layer_widths)
         self.inner_activation_function = inner_activation_function
         self.outer_activation_function = outer_activation_function
@@ -178,9 +178,14 @@ class NeuralNetwork(object):
         self.zero_bias_inputs()
 
         mean_squared_error /= len(X)
-        if not self.last_output_time or self.last_output_time + 10 < time.time():
+
+        if mean_squared_error < self.min_error:
+            self.min_error = mean_squared_error
+            self.best_epoch = epoch
+
+        if not self.last_output_time or self.last_output_time + 3 < time.time():
             self.last_output_time = time.time()
-            print("Epoch %s \tMSE: %s" % (epoch, mean_squared_error))
+            print("Epoch %s \tMSE: %.5f \t best MSE: %.5f" % (epoch, mean_squared_error, self.min_error))
 
         # self.print_debug()
 
@@ -188,12 +193,8 @@ class NeuralNetwork(object):
             print("Stopping at epoch %s due to stop stop criterion" % epoch)
             return False
 
-        if mean_squared_error < self.min_error:
-            self.min_error = mean_squared_error
-            self.best_epoch = epoch
-
-        if epoch - self.best_epoch > self.restart_limit:
-            print("Restarting at epoch %s due to no improvement in %s epochs" % (epoch, restart_limit))
+        if self.restart_limit > 0 and epoch - self.best_epoch > self.restart_limit:
+            print("Restarting at epoch %s due to no improvement in %s epochs" % (epoch, self.restart_limit))
             self.restart()
 
         return True
