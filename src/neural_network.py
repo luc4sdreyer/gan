@@ -11,7 +11,9 @@ with the first node being the bias, except for the output layer that doesn't hav
 This network uses mean squared error for the error (loss) function.
 """
 
+import sys
 import random
+import time
 
 from .matrix import Matrix
 from . import activation_functions
@@ -24,13 +26,18 @@ class NeuralNetwork(object):
         outer_activation_function=activation_functions.logistic,
         initializer=lambda: random.gauss(0, 1),
         num_iterations=1000,
-        learning_rate=0.1):
+        learning_rate=0.1,
+        stop_criterion=lambda err: err < 10**-5,
+        restart_limit=10000):
 
+        self.restart_limit = restart_limit
         self.learning_rate = learning_rate
         self.num_iterations = num_iterations
         self.depth = len(layer_widths)
         self.inner_activation_function = inner_activation_function
         self.outer_activation_function = outer_activation_function
+        self.stop_criterion = stop_criterion
+        self.initializer = initializer
 
         # +1 for bias nodes, but not on the final layer
         self.layer_widths = []
@@ -39,22 +46,31 @@ class NeuralNetwork(object):
             width = width + 1 if i < len(layer_widths) - 1 else width
             self.layer_widths.append(width)
 
+        self.restart()
+
+    def restart(self):
         self.weights = []
         for i in range(self.depth -1):
-            w = Matrix.create([self.layer_widths[i], self.layer_widths[i+1]], initializer)
+            w = Matrix.create([self.layer_widths[i], self.layer_widths[i+1]], self.initializer)
             self.weights.append(w)
 
-        # bias nodes' inputs are always zero
-        for i in range(self.depth -2):
-            w = self.weights[i]
-            for j in range(len(w._arr)):
-                w[j][0] = 0
+        self.zero_bias_inputs()
 
         # backpropagation info
         self._a = [None] * self.depth  # node inputs
         self._o = [None] * self.depth  # node outputs
         self.deltas = []
 
+        self.min_error = sys.float_info.max
+
+        self.last_output_time = None
+
+    def zero_bias_inputs(self):
+        # bias nodes' inputs are always zero
+        for i in range(self.depth -2):
+            w = self.weights[i]
+            for j in range(len(w._arr)):
+                w[j][0] = 0
 
     def __str__(self):
         return " > ".join([",".join([str(x) for x in m.dimensions]) for m in self.weights])
@@ -101,7 +117,7 @@ class NeuralNetwork(object):
 
         return input_list._arr[0]
 
-    def _get_delta(self, X, y):
+    def _get_delta(self, y_diff):
         # get the error (delta), working backwards from the output layer
         delta = [None] * self.depth
         for current_depth in range(self.depth -1, 0, -1):
@@ -110,7 +126,9 @@ class NeuralNetwork(object):
             # print("current_width: %s" % current_width)
             if current_depth == self.depth -1:
                 # print("self._a: %s" % self._a)
-                delta_layer = Matrix([[self.outer_activation_function.df(self._a[current_depth][0])]])
+                delta_layer = Matrix([[
+                    self.outer_activation_function.df(self._a[current_depth][0]) * y_diff
+                ]])
             else:
                 activation_matrix = Matrix.create([current_width, current_width], lambda: 0.0)
                 for i in range(current_width):
@@ -134,16 +152,19 @@ class NeuralNetwork(object):
             pdews[i] = Matrix([self._o[i]]).transpose().multiply(deltas[i+1].transpose())
         return pdews
 
-    def train_step(self, X, y):
+    def train_step(self, X, y, epoch):
         self.total_pdews = None
+        mean_squared_error = 0
         for i in range(len(X)):
-            actual_y = self.load(X[i])
-            self.deltas = self._get_delta(X, y)
+            actual_y = self.load(X[i])[0]
+            y_diff = actual_y - y[i]
+            mean_squared_error += y_diff * y_diff
+            self.deltas = self._get_delta(y_diff)
             self.pdews = self._get_pdew(self.deltas)
             if i == 0:
                 self.total_pdews = self.pdews
             else:
-                for j in range(self.dept -1):
+                for j in range(self.depth -1):
                     self.total_pdews[j].add(self.pdews[j])
 
         for j in range(0, self.depth -1):
@@ -154,7 +175,33 @@ class NeuralNetwork(object):
         for j in range(0, self.depth -1):
             self.weights[j].add(self.weight_adjustments[j])
 
+        self.zero_bias_inputs()
+
+        mean_squared_error /= len(X)
+        if not self.last_output_time or self.last_output_time + 10 < time.time():
+            self.last_output_time = time.time()
+            print("Epoch %s \tMSE: %s" % (epoch, mean_squared_error))
+
+        # self.print_debug()
+
+        if self.stop_criterion(mean_squared_error):
+            print("Stopping at epoch %s due to stop stop criterion" % epoch)
+            return False
+
+        if mean_squared_error < self.min_error:
+            self.min_error = mean_squared_error
+            self.best_epoch = epoch
+
+        if epoch - self.best_epoch > self.restart_limit:
+            print("Restarting at epoch %s due to no improvement in %s epochs" % (epoch, restart_limit))
+            self.restart()
+
+        return True
+
 
     def train(self, X, y):
         for epoch in range(self.num_iterations):
-            self.train_step(X, y)
+            if not self.train_step(X, y, epoch):
+                break
+
+        self.print_debug()
