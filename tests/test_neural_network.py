@@ -52,7 +52,8 @@ def test_load_gaussian(reset_random_seed):
 def test_train_gaussian(reset_random_seed):
     n = NeuralNetwork(
         [3,2,3,1],
-        num_iterations=1000
+        num_iterations=1000,
+        lamb = 0.0,
     )
     print(n.weights[0][0][1])
     X = [

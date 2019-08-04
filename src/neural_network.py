@@ -1,6 +1,7 @@
 """
 For some background on backpropagation, see:
-https://web.archive.org/web/20181116193650/https://brilliant.org/wiki/backpropagation/
+https://brilliant.org/wiki/backpropagation/
+http://neuralnetworksanddeeplearning.com/chap3.html
 
 The weight matrix convention used here is:
 
@@ -28,8 +29,10 @@ class NeuralNetwork(object):
         num_iterations=1000,
         learning_rate=0.1,
         stop_criterion=lambda err: err < 10**-5,
-        restart_limit=0):
+        restart_limit=0,
+        lamb=1.0,):
 
+        self.lamb = lamb
         self.restart_limit = restart_limit
         self.learning_rate = learning_rate
         self.num_iterations = num_iterations if num_iterations > 0 else sys.maxint
@@ -142,7 +145,7 @@ class NeuralNetwork(object):
 
     def _get_pdew(self, deltas):
         """
-        Partial derivative of the error with respect to each weight (pdew).
+        Partial derivative of the error with respect to each weight (pdew), or ∂E/∂w
         """
         # print("pdews")
         # print(self._o)
@@ -156,12 +159,19 @@ class NeuralNetwork(object):
         self.total_pdews = None
         mean_squared_error = 0
 
+        # regularization
+        reg = 0
+        for j in range(0, self.depth -1):
+            reg += self.weights[j].squared_l2_norm()
+        reg = self.lamb / (2.0 * len(X))
+
         # get partial errors
         for i in range(len(X)):
             actual_y = self.load(X[i])
             y_diff = actual_y[0] - y[i]
             mean_squared_error += y_diff * y_diff
-            self.deltas = self._get_delta(y_diff)
+            total_cost = y_diff + reg
+            self.deltas = self._get_delta(total_cost)
             self.pdews = self._get_pdew(self.deltas)
             if i == 0:
                 self.total_pdews = self.pdews
@@ -171,12 +181,15 @@ class NeuralNetwork(object):
 
         # apply learning rate
         for j in range(0, self.depth -1):
-            self.total_pdews[j].multiply_scalar(1.0 / len(X) * -self.learning_rate)
+            self.total_pdews[j].multiply_scalar(-self.learning_rate / len(X))
 
         self.weight_adjustments = self.total_pdews
 
         # adjust weights
         for j in range(0, self.depth -1):
+            # regularization
+            self.weights[j].multiply_scalar(1.0 - self.lamb * self.learning_rate / len(X))
+            # rest of the error
             self.weights[j].add(self.weight_adjustments[j])
 
         self.zero_bias_inputs()
